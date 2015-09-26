@@ -1,5 +1,10 @@
 package controllers
 
+import play.api.Play.current
+import play.api.data.Form
+import play.api.data.Forms.{ mapping, text, of }
+import play.api.data.format.Formats.doubleFormat
+import play.api.i18n.Messages.Implicits._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{ Json, JsSuccess, JsError, Reads, __ }
@@ -17,7 +22,7 @@ class Items extends Controller {
   )(CreateItem.apply _)
 
   def list(page: Int) = Action {
-    Ok(views.html.list.render(shop.list))
+    Ok(views.html.list(shop.list))
   }
 
   val create = Action(parse.json) { implicit request =>
@@ -31,9 +36,20 @@ class Items extends Controller {
     }
   }
 
+  val createItemFormModel = Form(
+    mapping(
+      "name" -> text,
+      "price" -> of[Double]
+    )(CreateItem.apply)(CreateItem.unapply)
+  )
+
+  val createForm = Action {
+    Ok(views.html.createForm(createItemFormModel))
+  }
+
   def details(id: Long) = Action {
     shop.get(id) match {
-      case Some(item) => Ok(views.html.details.render(item)) // Ok(Json.toJson(item))
+      case Some(item) => Ok(views.html.details(item)) // Ok(Json.toJson(item))
       case None => NotFound
     }
   }

@@ -17,7 +17,7 @@ class Items extends Controller {
   )(CreateItem.apply _)
 
   def list(page: Int) = Action {
-    Ok(Json.toJson(shop.list))
+    Ok(views.html.list.render(shop.list))
   }
 
   val create = Action(parse.json) { implicit request =>
@@ -33,7 +33,7 @@ class Items extends Controller {
 
   def details(id: Long) = Action {
     shop.get(id) match {
-      case Some(item) => Ok(Json.toJson(item))
+      case Some(item) => Ok(views.html.details.render(item)) // Ok(Json.toJson(item))
       case None => NotFound
     }
   }

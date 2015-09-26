@@ -1,14 +1,20 @@
 package controllers
 
 import play.api.Play.current
+
 import play.api.data.Form
 import play.api.data.Forms.{ mapping, text, of }
 import play.api.data.format.Formats.doubleFormat
+import play.api.data.validation.Constraints.nonEmpty
+
 import play.api.i18n.Messages.Implicits._
+
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{ Json, JsSuccess, JsError, Reads, __ }
+
 import play.api.mvc.{ Controller, Action }
+
 import models.{ Item, CreateItem }
 
 class Items extends Controller {
@@ -39,8 +45,8 @@ class Items extends Controller {
 
   val createItemFormModel = Form(
     mapping(
-      "name" -> text,
-      "price" -> of[Double]
+      "name" -> text.verifying(nonEmpty),
+      "price" -> of[Double].verifying("Price must be positive", _ > 0)
     )(CreateItem.apply)(CreateItem.unapply)
   )
 

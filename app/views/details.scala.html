@@ -6,6 +6,7 @@
 
 @content(item: models.Item) = {
     <p><strong>@item.name</strong>: @item.price&nbsp;€</p>
+    <p><a href="@controllers.routes.Items.list()">Back to items</a></p>
 }
 
 @layout("Item details")(content(item))

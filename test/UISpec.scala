@@ -1,11 +1,15 @@
-import play.api.test.{ WithBrowser, PlaySpecification }
+import play.api.test.{ FakeApplication, Helpers, PlaySpecification, WithBrowser }
 
 class UISpec extends PlaySpecification {
 
   "A user" should {
-    "add a new item to the item list" in new WithBrowser {
-      // browser.goTo(controllers.routes.Items.list().url)
-      // browser.$("ul").isEmpty must be True
+    "add a new item to the item list" in new WithBrowser(
+      app = FakeApplication(
+        additionalConfiguration = Helpers.inMemoryDatabase()
+      )
+    ) {
+      browser.goTo(controllers.routes.Items.list().url)
+      browser.$("ul").isEmpty must beTrue
 
       val formUrl = controllers.routes.Items.createForm().url
       browser.$(s"""a[href="$formUrl"]""").click()

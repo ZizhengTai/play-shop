@@ -28,8 +28,13 @@ class Items extends Controller {
     )(CreateItem.apply)(CreateItem.unapply)
   )
 
-  def list(page: Int) = Action {
-    Ok(views.html.list(shop.list))
+  def list(page: Int) = Action { implicit request =>
+    val items = shop.list
+
+    render {
+      case Accepts.Html() => Ok(views.html.list(items))
+      case Accepts.Json() => Ok(Json.toJson(items))
+    }
   }
 
   val create = Action { implicit request =>

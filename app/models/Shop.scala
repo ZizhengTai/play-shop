@@ -19,12 +19,12 @@ trait Shop {
 
 object Shop extends Shop with ItemTable with HasDatabaseConfig[JdbcProfile] {
 
-  val dbConfig = DatabaseConfigProvider.get[JdbcProfile](Play.current)
   import driver.api._
 
-  val items = TableQuery[Items]
+  val dbConfig = DatabaseConfigProvider.get[JdbcProfile](Play.current)
+  private val items = TableQuery[Items]
 
-  def list: Seq[Item] = Await.result(db.run(items.result), Duration.Inf)
+  def list(): Seq[Item] = Await.result(db.run(items.result), Duration.Inf)
 
   def create(name: String, price: Double): Option[Item] = {
     val item =

@@ -32,16 +32,27 @@ class Items extends Controller {
     Ok(views.html.list(shop.list))
   }
 
-  val create = Action(parse.urlFormEncoded) { implicit request =>
-    createItemFormModel.bindFromRequest.fold(
-      formWithErrors => BadRequest(views.html.createForm(formWithErrors)),
-      createItem => {
-        shop.create(createItem.name, createItem.price) match {
-          case Some(item) => Redirect(routes.Items.details(item.id))
-          case None => InternalServerError
+  val create = Action { implicit request =>
+    request.body.asFormUrlEncoded.map(form =>
+        createItemFormModel.bindFromRequest.fold(
+        formWithErrors => BadRequest(views.html.createForm(formWithErrors)),
+        createItem => {
+          shop.create(createItem.name, createItem.price) match {
+            case Some(item) => Redirect(routes.Items.details(item.id))
+            case None => InternalServerError
+          }
         }
-      }
-    )
+      )
+    ).orElse(request.body.asJson.map(json =>
+        json.validate[CreateItem] match {
+          case JsSuccess(CreateItem(name, price), _) =>
+            shop.create(name, price) match {
+              case Some(item) => Ok(Json.toJson(item))
+              case None => InternalServerError
+            }
+          case JsError(errors) => BadRequest
+        }
+    )).getOrElse(BadRequest)
   }
 
   val createForm = Action {

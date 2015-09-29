@@ -1,5 +1,84 @@
 package controllers
 
+import javax.inject.Inject
+
+import scala.concurrent.Future
+import scala.util.{ Try, Success, Failure }
+
+import play.api.Logger
+import play.api.mvc.{ Controller, Action }
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.libs.functional.syntax._
+import play.api.libs.json._
+
+import reactivemongo.api.Cursor
+import reactivemongo.bson.BSONObjectID
+
+import play.modules.reactivemongo.{ MongoController, ReactiveMongoApi, ReactiveMongoComponents }
+import play.modules.reactivemongo.json._
+import play.modules.reactivemongo.json.collection._
+
+import models.{ Item, CreateItem }
+
+class Items @Inject() (val reactiveMongoApi: ReactiveMongoApi)
+    extends Controller with MongoController with ReactiveMongoComponents {
+
+  def shop: JSONCollection = db.collection[JSONCollection]("items")
+
+  implicit val itemFormat = Json.format[Item]
+  implicit val readsCreateItem: Reads[CreateItem] = (
+    (__ \ "name").read(Reads.minLength[String](1)) and
+    (__ \ "price").read(Reads.min[Double](0))
+  )(CreateItem.apply _)
+
+  def list(page: Int) = Action.async { implicit request =>
+    val cursor = shop.find(Json.obj()).cursor[Item]()
+    val itemsFuture: Future[List[Item]] = cursor.collect[List]()
+    itemsFuture.map { items =>
+      render {
+        case Accepts.Html() => Ok(views.html.list(items))
+        case Accepts.Json() => Ok(Json.toJson(items))
+      }
+    }
+  }
+
+  def create = Action.async(parse.json) { implicit request =>
+    request.body.validate[CreateItem] match {
+      case JsSuccess(CreateItem(name, price), _) =>
+        val item = Item(BSONObjectID.generate, name, price)
+        val future = shop.insert(item)
+        future.map(_ => Ok(Json.toJson(item)))
+      case JsError(errors) =>
+        Future.successful(BadRequest)
+    }
+  }
+  
+  val createForm = Action { NotImplemented }
+  
+  def details(id: String) = Action.async { implicit request =>
+    Try(BSONObjectID(id)) match {
+      case Success(id) =>
+        shop.find(Json.obj("_id" -> id)).one[Item].map { item =>
+          item match {
+            case Some(item) =>
+              render {
+                case Accepts.Html() => Ok(views.html.details(item))
+                case Accepts.Json() => Ok(Json.toJson(item))
+              }
+            case None => NotFound("Item does not exist")
+          }
+        }
+      case Failure(error) => Future.successful(NotFound("Invalid object ID"))
+    }
+  }
+  
+  def update(id: String) = Action { NotImplemented }
+  def delete(id: String) = Action { NotImplemented }
+}
+
+/*
+package controllers
+
 import play.api.Play.current
 import play.api.data.Form
 import play.api.data.Forms.{ mapping, nonEmptyText, of }
@@ -82,3 +161,4 @@ class Items extends Controller {
   }
 
 }
+*/

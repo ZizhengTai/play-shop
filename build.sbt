@@ -14,7 +14,8 @@ libraryDependencies ++= Seq(
   "com.zaxxer" % "HikariCP" % "2.4.1",
   "com.typesafe.slick" %% "slick" % "3.0.3",
   "com.typesafe.play" %% "play-slick" % "1.0.1",
-  "com.typesafe.play" %% "play-slick-evolutions" % "1.0.1"
+  "com.typesafe.play" %% "play-slick-evolutions" % "1.0.1",
+  "org.reactivemongo" %% "play2-reactivemongo" % "0.11.7.play24"
 )
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"

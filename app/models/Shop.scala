@@ -1,22 +1,25 @@
 package models
 
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-import play.api.Play
-import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfig }
-import slick.driver.JdbcProfile
-import tables.ItemTable
+//import scala.concurrent.Await
+//import scala.concurrent.duration.Duration
+//import play.api.Play
+//import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfig }
+//import slick.driver.JdbcProfile
+//import tables.ItemTable
 
-case class Item(id: Long, name: String, price: Double)
+import reactivemongo.bson.BSONObjectID
+
+case class Item(_id: BSONObjectID, name: String, price: Double)
 
 trait Shop {
   def list: Seq[Item]
   def create(name: String, price: Double): Option[Item]
-  def get(id: Long): Option[Item]
-  def update(id: Long, name: String, price: Double): Option[Item]
-  def delete(id: Long): Boolean
+  def get(id: String): Option[Item]
+  def update(id: String, name: String, price: Double): Option[Item]
+  def delete(id: String): Boolean
 }
 
+/*
 object Shop extends Shop with ItemTable with HasDatabaseConfig[JdbcProfile] {
 
   import driver.api._
@@ -48,3 +51,4 @@ object Shop extends Shop with ItemTable with HasDatabaseConfig[JdbcProfile] {
     Await.result(db.run(items.filter(_.id === id).delete), Duration.Inf) > 0
   }
 }
+*/

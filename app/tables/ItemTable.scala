@@ -1,4 +1,4 @@
-package tables
+/*package tables
 
 import slick.driver.JdbcProfile
 import models.Item
@@ -13,4 +13,4 @@ trait ItemTable {
     val price = column[Double]("price")
     def * = (id, name, price) <> (Item.tupled, Item.unapply _)
   }
-}
+}*/

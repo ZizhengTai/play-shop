@@ -32,8 +32,7 @@ class Items @Inject() (val reactiveMongoApi: ReactiveMongoApi)
   )(CreateItem.apply _)
 
   def list(page: Int) = Action.async { implicit request =>
-    val cursor = shop.find(Json.obj()).cursor[Item]()
-    val itemsFuture: Future[List[Item]] = cursor.collect[List]()
+    val itemsFuture = shop.find(Json.obj()).cursor[Item]().collect[List]()
     itemsFuture.map { items =>
       render {
         case Accepts.Html() => Ok(views.html.list(items))
@@ -46,10 +45,8 @@ class Items @Inject() (val reactiveMongoApi: ReactiveMongoApi)
     request.body.validate[CreateItem] match {
       case JsSuccess(CreateItem(name, price), _) =>
         val item = Item(BSONObjectID.generate, name, price)
-        val future = shop.insert(item)
-        future.map(_ => Ok(Json.toJson(item)))
-      case JsError(errors) =>
-        Future.successful(BadRequest)
+        shop.insert(item).map(_ => Ok(Json.toJson(item)))
+      case JsError(errors) => Future.successful(BadRequest)
     }
   }
   
